@@ -1,0 +1,51 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath "com.github.jengelman.gradle.plugins:shadow:4.0.2"
+  }
+}
+
+plugins {
+  id "java"
+}
+
+version = "0.0.3"
+
+repositories {
+  mavenCentral()
+}
+
+apply plugin: "com.github.johnrengelman.shadow"
+
+dependencies {
+  implementation 'org.apache.kafka:kafka-streams:3.0.0'
+  implementation 'com.google.guava:guava:30.1.1-jre'
+  implementation 'com.google.code.gson:gson:2.9.0'
+  implementation 'io.lettuce:lettuce-core:6.1.6.RELEASE'
+  implementation 'org.slf4j:slf4j-simple:1.7.30'
+  implementation 'com.timgroup:java-statsd-client:3.0.1'
+  // Use JUnit Jupiter for testing.
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
+
+}
+
+tasks.named('test') {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}
+
+jar {
+  manifest {
+    attributes(
+        "Class-Path": configurations.compileClasspath.collect { it.getName() }.join(" "),
+        "Main-Class": "com.everx.remp.streams.App"
+    )
+  }
+}
+
+shadowJar {
+  archiveBaseName = "remp-streams-app"
+  archiveClassifier = ""
+}

@@ -1,0 +1,29 @@
+[
+    {
+        "name": "happy path", 
+        "parallel": 20,
+        "ncycles": 5,
+        "events": [
+            { "timestamp": 1000, "kind": "SentToValidators" },
+            { "timestamp": 4000, "kind": "IncludedIntoBlock" },
+            { "timestamp": 9000, "kind": "IncludedIntoAcceptedBlock" },
+            { "timestamp": 19000, "kind": "Finalized" }
+        ]
+    },
+        {
+        "name": "failure path",
+        "parallel": 20,
+        "ncycles": 5,
+        "events": [{ "timestamp": 1000, "kind": "RejectedByFullnode" }]
+    },
+        {
+        "name": "black hole path",
+        "parallel": 20,
+        "ncycles": 5,
+        "events": [
+            { "timestamp": 200, "kind": "SentToValidators" },
+            { "timestamp": 1500, "kind": "IncludedIntoBlock" }
+        ]
+    }
+  
+]

@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Class-Path: kafka-streams-3.0.0.jar guava-30.1.1-jre.jar gson-2.9.0.jar 
+ lettuce-core-6.1.6.RELEASE.jar slf4j-simple-1.7.30.jar java-statsd-clie
+ nt-3.0.1.jar kafka-clients-3.0.0.jar rocksdbjni-6.19.3.jar failureacces
+ s-1.0.1.jar listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.
+ jar jsr305-3.0.2.jar checker-qual-3.8.0.jar error_prone_annotations-2.5
+ .1.jar j2objc-annotations-1.3.jar netty-handler-4.1.72.Final.jar netty-
+ codec-4.1.72.Final.jar netty-transport-4.1.72.Final.jar netty-resolver-
+ 4.1.72.Final.jar netty-buffer-4.1.72.Final.jar netty-common-4.1.72.Fina
+ l.jar reactor-core-3.3.22.RELEASE.jar slf4j-api-1.7.30.jar netty-tcnati
+ ve-classes-2.0.46.Final.jar reactive-streams-1.0.3.jar
+Main-Class: com.everx.remp.streams.App
+

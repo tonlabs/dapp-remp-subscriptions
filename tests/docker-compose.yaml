@@ -1,0 +1,104 @@
+---
+version: '3'
+
+services:
+    zookeeper:
+        image: confluentinc/cp-zookeeper:6.0.0
+        hostname: zookeeper
+        expose:
+            - '32181'
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 32181
+            ZOOKEEPER_TICK_TIME: 2000
+
+    redis:
+        image: redis
+        volumes:
+            - ./Redis/redis.conf:/redis.conf
+        command: ['redis-server', '/redis.conf']
+        #
+        # Expose Redis on the host machine (if someone needs it for testing)
+        #
+        # ports:
+        #    - '6379:6379'
+
+    kafka:
+        image: confluentinc/cp-enterprise-kafka:6.0.0
+        hostname: kafka
+        depends_on:
+            - zookeeper
+        expose:
+            - '29092'
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:32181'
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://kafka:29092
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+    kafka-create-topics:
+        image: confluentinc/cp-enterprise-kafka:6.0.0
+        depends_on:
+            - kafka
+        hostname: kafka-create-topics
+        command: ['bash', './create-topics.sh']
+        working_dir: /scripts
+        volumes:
+            - ./scripts:/scripts
+
+    remp-streams-app:
+        image: openjdk:11
+        working_dir: /app
+        command: sh -c "sleep 30 && java -jar build/libs/remp-streams-app-0.0.3.jar configuration/dev.properties"
+        depends_on:
+            - kafka
+            - redis
+        volumes:
+            - type: bind
+              source: ../remp-streams-app
+              target: /app
+
+    simple-integration-test:
+        image: node
+        user: node
+        working_dir: /app
+        command: sh -c "npm i && npm run build && tail -f /dev/null"
+        volumes:
+            - type: bind
+              source: ./simple-integration-test
+              target: /app
+
+    integration-test:
+        image: node
+        user: node
+        working_dir: /app
+        command: sh -c "npm i && npm run build && tail -f /dev/null"
+        volumes:
+            - type: bind
+              source: ./integration-test
+              target: /app
+        environment:
+            NODE_OPTIONS: '--max_old_space_size=8192'
+ 
+    q-server:
+        build:
+            context: .
+            dockerfile: Q-server/q-server-consul-template.Dockerfile
+        command: node index.js
+        environment:
+            VIRTUAL_HOST: q-server
+            VIRTUAL_PORT: 4000
+            NODE_OPTIONS: '--max_old_space_size=4096'
+            Q_REQUESTS_MODE: kafka
+            Q_REQUESTS_TOPIC: requests
+            Q_REQUESTS_SERVER: kafka:29092'
+            Q_SUBSCRIPTIONS_KAFKA_SERVER: kafka:29092
+            Q_REMP_ENABLED: 'true'
+            Q_REMP_REDIS_CLIENT_URL: redis://redis:6379
+            #
+            # Expose Q-server on the host machine (if someone needs it for testing)
+            # ports:
+            #    - '4000:4000'
